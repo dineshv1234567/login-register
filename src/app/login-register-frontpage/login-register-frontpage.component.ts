@@ -17,12 +17,19 @@ export class LoginRegisterFrontpageComponent implements OnInit {
 
 registerUsername:String;
 registerPassword:String;
+registerAddress:String;
+registerCity:String;
+registerState:String;
+registerZip:number;
 loginDetails:loginDetails;
   loginForm:FormGroup;
+   addressProxy:FormGroup;
    registerForm:FormGroup;
     fb: FormBuilder;
      vendorDetails:vendorDetails;
   form:FormGroup;
+  tempPassword:String;
+  isAlredyExist:boolean=false;
 
   constructor(
   @Inject(FormBuilder)  fb: FormBuilder,
@@ -35,6 +42,7 @@ loginDetails:loginDetails;
             password: ['',[Validators.required, Validators.minLength(8), Validators.maxLength(20), Validators.pattern("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")]],
             rePassword: ['',[Validators.required]]
         },{validator: this.checkIfMatchingPasswords});
+    this.onChanges();
   }
 
   ngOnInit() {
@@ -60,21 +68,61 @@ loginDetails:loginDetails;
         vendorZip : new FormControl('', [Validators.required, Validators.pattern('[0-9]*')]),
         vendorContact : new FormControl('', [Validators.required, Validators.pattern('[0-9]*'),Validators.minLength(10),Validators.maxLength(11)])
     });
+        
   }
+
+  onChanges(): void {
+  this.registerForm.get('username').valueChanges.subscribe(val => {
+    this.isAlredyExist=false;
+  });
+}
   
+ validateUsername(){
+  let body= {
+                    "email": this.registerForm.get('username').value
+                };
+      this.registerService.register(body).subscribe((res) => {
+          },
+          (res:Response) => {
+           if(res.status==409) {
+              this.isAlredyExist=true;
+            }
+          });
+    }
+
+
   login(){
 		let username=this.loginForm.get('username').value;	
 		let	password = this.loginForm.get('password').value;
 		var xorKey = 129; 
     	var result = "";
+
     	for (let i = 0; i < password.length; i++) {
         result += String.fromCharCode(xorKey ^ password.charCodeAt(i));
     }
 
   	this.loginService.loginWithEmailId(username,result).subscribe((res) =>{
-  		alert("Login Successfull");	
-      }, (error) =>{
-      	console.log("error in login");
+  		alert("Login Successfull");	 
+      }, (res:Response) =>{
+        if(res.status==401){
+          alert("Unauthorized User");
+        }
+        else if(res.status==500){
+          alert("Internal server error");
+        }
+        else if(res.status==201){
+          alert("Successfully logged in");
+        }
+        else if(res.status==404){
+          alert("Service Not Found");
+        }
+        else if(res.status==403){
+          alert("403 Forbidden");
+        }
+      	else{
+           alert("Connection error");
+
+        }
   });
   }
 
@@ -89,52 +137,146 @@ loginDetails:loginDetails;
      }
  }
 
-AddUser(){
-  console.log(this.form.value);
+registerVendor(){
+  let tempPassword="";
+  
+    tempPassword=this.form.get('password').value;
+       var xorKey = 129; 
+      var resultPassword = "";
+
+      for (let i = 0; i < tempPassword.length; i++) {
+        resultPassword += String.fromCharCode(xorKey ^ tempPassword.charCodeAt(i));
+    }
+
       let body={
                     "address": {
-                                    "city": "string",
-                                    "state": "string",
-                                    "street": "string",
-                                    "zipCode": 0
+                                    "city": this.form.get('city').value,
+                                    "state": this.form.get('state').value,
+                                    "street": this.form.get('address').value,
+                                    "zipCode": this.form.get('zip').value
                                },
-                    "dob": "string",
-                    "email": "sasasastring",
-                    "firstName": "string",
-                    "gender":    "string",
-                    "lastName":  "string",
-                    "mobileNo":  "string",
-                    "password":  "string",
-                    "role":      "string",
+                    "dob": this.form.get('DOB').value,
+                    "email": this.form.get('email').value,
+                    "firstName": this.form.get('firstName').value,
+                    "gender":    this.form.get('gender').value,
+                    "lastName":  this.form.get('lastName').value,
+                    "mobileNo":  this.form.get('contact').value,
+                    "password":  resultPassword,
+                    "role":      "vendor",
                     "shopAddress": {
-                                      "city": "string",
-                                      "state": "string",
-                                      "street": "string",
-                                      "zipCode": 0
+                                      "city": this.form.get('vendorCity').value,
+                                      "state": this.form.get('vendorState').value,
+                                      "street": this.form.get('vendorAddress').value,
+                                      "zipCode": this.form.get('vendorZip').value
                                     },
-                    "vendorMobileNo": "string"
+                    "vendorMobileNo": this.form.get('vendorContact').value
                 };
-
+console.log(this.form.value);
 
      this.registerService.register(body).subscribe((res) =>{
-       console.log("resukt"+res);
       alert("Registered");  
-      }, (error) =>{
-        console.log("error in register");
+      }, (res:Response) =>{
+        console.log(res);
+       if(res.status==401 || res.status==409){
+          alert("Username already exists");
+        }
+        else if(res.status==500){
+          alert("Internal server error");
+        }
+        else if(res.status==201){
+          alert("Successfully registered");
+        }
+        else if(res.status==404){
+          alert("Service Not Found");
+        }
+        else if(res.status==403){
+          alert("403 Forbidden");
+        }
+        else{
+           alert("Connection error");
+
+        }
   });
 
 }
 
+registerUser(){
+  let tempPassword="";
+  
+    tempPassword=this.registerForm.get('password').value;
+       var xorKey = 129; 
+      var resultPassword = "";
+
+      for (let i = 0; i < tempPassword.length; i++) {
+        resultPassword += String.fromCharCode(xorKey ^ tempPassword.charCodeAt(i));
+    }
+
+      let body={
+                    "email": this.registerForm.get('username').value,
+                    "password":  resultPassword,
+                    "role":      "customer"
+                };
+
+     this.registerService.register(body).subscribe((res) =>{
+      alert("Registered");  
+      }, (res:Response) =>{
+        console.log(res);
+       if(res.status==401 || res.status==409){
+          alert("Username already exists");
+        }
+        else if(res.status==500){
+          alert("Internal server error");
+        }
+        else if(res.status==201){
+          alert("Successfully registered");
+        }
+        else if(res.status==404){
+          alert("Service Not Found");
+        }
+        else if(res.status==403){
+          alert("403 Forbidden");
+        }
+        else{
+           alert("Connection error");
+
+        }
+  });
+
+}
+
+// onKeydown(event) {
+//    this.validateUsername();
+// }
 
  IsHidden= true;
 IsNotHidden=false;
 onSelect(){
 this.registerUsername = this.registerForm.get('username').value;
 this.registerPassword = this.registerForm.get('password').value;
- this.IsHidden= !this.IsHidden;
+ 
+
+   this.form.patchValue({
+   email:  this.registerUsername,
+   password: this.registerPassword
+});
+
+   this.IsHidden= !this.IsHidden;
  this.IsNotHidden= !this.IsNotHidden;
 }
 
+setAddress(){
+  this.registerAddress=this.form.get('address').value;
+  this.registerCity=this.form.get('city').value;
+  this.registerState=this.form.get('state').value;
+  this.registerZip=this.form.get('zip').value;
+ 
+   this.form.patchValue({
+   vendorAddress:  this.registerAddress,
+   vendorCity: this.registerCity,
+    vendorState:  this.registerState,
+   vendorZip: this.registerZip
+});
+};
 
   }
 

@@ -20,7 +20,10 @@ export class LoginService {
 			        }
    	console.log(body);
     return this.http.post(Login.loginWIthId, body, {headers: this.headers})
-     .map(data => {data.toString;console.log(data)},
+     .map((res:Response) => {
+       localStorage.setItem("application-token",res.text());
+console.log(res.text());
+     },
 	(error: any)=>console.log("error in calling register service"));
 }
 

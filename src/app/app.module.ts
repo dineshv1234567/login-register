@@ -3,17 +3,16 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { LoginRegisterFrontpageComponent } from './login-register-frontpage/login-register-frontpage.component';
-import { VendorRegistrationDetailsComponent } from './vendor-registration-details/vendor-registration-details.component';
 import {LoginService} from './services/login.service';
 import {RegisterService} from './services/register.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
+import { ForgotPasswordService } from './services/forgot-password.service';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginRegisterFrontpageComponent,
-    VendorRegistrationDetailsComponent
+    LoginRegisterFrontpageComponent
   ],
   imports: [
     BrowserModule,
@@ -23,7 +22,8 @@ import { HttpModule } from '@angular/http';
   ],
   providers: [
   LoginService,
-  RegisterService
+  RegisterService,
+  ForgotPasswordService
   ],
   bootstrap: [AppComponent]
 })

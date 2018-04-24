@@ -4,20 +4,19 @@ import { Observable } from 'rxjs/Observable';
 import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import 'rxjs/add/operator/map';
 
-import {Register} from '../config/register.config';
+import {ForgotPassword} from '../config/forgotPassword.config';
 
 @Injectable()
-export class RegisterService {
+export class ForgotPasswordService {
 
   constructor(private http: Http) { }
 
-  private headers = new Headers({ 'Content-Type': 'application/json'});
+   forgotPasswordWithEmail(username){
+    return this.http.get(ForgotPassword.passEmailId+username)
+     .map(data => {data.toString;
 
-  register(body){
-    return this.http.post(Register.registerDetails, body, {headers: this.headers})
-     .map(data => {data.toString},
+     },
 	(error: any)=>console.log("error in calling register service"));
-  }
+}
 
 }
-//data.toString;console.log(data)
